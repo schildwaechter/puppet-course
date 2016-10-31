@@ -1,0 +1,11 @@
+# Puppet Basics
+
+This is a very basic introduction to [puppet](https://puppet.com).
+
+### Prerequesites
+
+You need [Vagrant](https://www.vagrantup.com/) and [Virtualbox](https://www.virtualbox.org/).
+It is highly recommended that you install the [vagrant-cachier](http://fgrehm.viewdocs.io/vagrant-cachier/) plugin.
+
+* [getting started](01_getting_started.md)
+
