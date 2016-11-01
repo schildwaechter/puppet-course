@@ -9,4 +9,5 @@ It is highly recommended that you install the [vagrant-cachier](http://fgrehm.vi
 
 * [getting started](01_getting_started.md)
 * [Modules](02_modules.md)
+* [Roles and Profiles](03_roles_profiles.md)
 

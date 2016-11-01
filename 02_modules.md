@@ -96,3 +96,30 @@ Note that `r10k`, the competitor to `librarian-puppet` is much more efficient in
 The Puppetfile supports much more than just downloading from Puppet forge.
 You can use git repositories as sources for modules and more. Have a look at the documentation.
 
+## Variables
+
+Since we already installed the `motd` module, lets use it by adding this to our puppet code:
+```puppet
+  class {'::motd':
+    content => "Welcome to ${::fqdn} running on ${::lsbdistid} ${::lsbdistrelease}!",
+  }
+```
+Notice that we are using variables in the string passed as content to the motd.
+The `$::fqdn` variable holds the fully qualified domain name of the node, while
+`$::lsbdistid` and `$::lsbdistrelease` are LSB distribution information.
+These variables are so-called *fact*s that puppet knows about the machine.
+To see all facts available to puppet run `facter -y -p` as root in the VM.
+
+Note that the modules can add facts that puppet will than know and you can even add your own.
+
+You can also define your own variables, e.g. by
+```puppet
+  $motd_string_a = "Welcome to ${::fqdn} running on ${::lsbdistid} ${::lsbdistrelease}!"
+  $motd_string_b = "This system was provision by puppet ${::uptime} after boot."
+  $motd_string = "${motd_string_a}${motd_string_b}"
+  class {'::motd':
+    content => $motd_string,
+  }
+```
+although they should be called constants, since you can only set them once, i.e. you can't change variables.
+Rember: Puppet defines a state and even a variable can only have one state or content, although that my change every run.
