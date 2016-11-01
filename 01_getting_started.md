@@ -56,6 +56,7 @@ and in the `Vagrantfile` now add
   config.vm.provision "puppet" do |puppet|
     puppet.manifests_path = "manifests"
     puppet.manifest_file = "vagrant.pp"
+    puppet.options = "--show_diff"
   end
 ```
 to the config block, i.e. before the final `end`.
