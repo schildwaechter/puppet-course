@@ -37,14 +37,9 @@ To get started, we need to make another distinction between the component module
 While the latter are modules as any other, we will not be loading them the same way.
 Instead we keep them directly in our repository.
 But since `librarian-puppet` will throw away anything foreign from the `modules` directory, we need to have the roles and profiles elsewhere.
-It is custom to put them in the `site` directory. So create that inside the `workdir` and tell Puppet that we will be loading modules from there:
-```ruby
-  config.vm.provision "puppet" do |puppet|
-    puppet.manifests_path = "manifests"
-    puppet.module_path = ["site","modules"]
-    puppet.manifest_file = "vagrant.pp"
-    puppet.options = "--show_diff"
-  end
+It is custom to put them in the `site` directory. So create that inside the `puppetcode` directory and tell Puppet that we will be loading modules from there by creating an `environment.conf` with the contents
+```ini
+modulepath = site:modules
 ```
 And create the directories:
 ```
@@ -90,7 +85,7 @@ Note: We have of course not done any database/mysql setup yet, that will be the 
 Now you my have seen those mentions of *Hiera* in the warning.
 Hiera is a hierarchical key-value-store that we will use now.
 
-First create a `hieradata` directory and a `hiera.yaml` in the `workdir` with contents
+First create a `hieradata` directory inside `puppetcode` and a `hiera.yaml` in the `workdir` with contents
 ```yaml
 ---
 :hierarchy:
@@ -111,12 +106,10 @@ First create a `hieradata` directory and a `hiera.yaml` in the `workdir` with co
 and change the Vagrantfile to
 ```ruby
   config.vm.provision "puppet" do |puppet|
-    puppet.manifests_path = "manifests"
-    puppet.module_path = ["site","modules"]
-    puppet.manifest_file = "vagrant.pp"
+    puppet.environment_path = "."
+    puppet.environment = "puppetcode"
     puppet.hiera_config_path = "hiera.yaml"
-    puppet.working_directory = "/vagrant"
-    puppet.options = "--show_diff"
+    puppet.options = "--show_diff --graph"
   end
 ```
 

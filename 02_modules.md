@@ -4,21 +4,13 @@ There are lots of existing Puppet solutions for all kinds of software and tools 
 While you can find much on GitHub, there is also the [Puppet Forge](https://forge.puppet.com/) as the standard platform, where Puppet code gets distributed as modules.
 A module is a collection of classes of puppet code, that can be used as a unit.
 
-Let's start by adding Modules to the Vagrant definition. Replace the relevant part of the Vagrantfile:
-```ruby
-  config.vm.provision "puppet" do |puppet|
-    puppet.manifests_path = "manifests"
-    puppet.module_path = "modules"
-    puppet.manifest_file = "vagrant.pp"
-    puppet.options = "--show_diff"
-  end
-```
-and create the `modules` directory and reload the Vagrant VM.
+By default, modules live in the `modules` directory of your environment, so create that directory in `puppetcode`.
 
 We will use the official [Puppet ntp module](https://forge.puppet.com/puppetlabs/ntp).
-As we are using Puppet 3, we will need an older version, that we need put in the `modules` directory.
+We will rely on older version, that we need put in the `modules` directory.
 
 There are two offical ways to install the module (besides manual download):
+
 1. install via Puppet command line
 2. install via `Puppetfile`
 
@@ -28,7 +20,7 @@ We start with the first solution, using the puppet on the Vagrant VM and the fac
 Log into the VM by running `vagrant ssh` and execute
 
 ```
-puppet module install puppetlabs-ntp --version 4.2.0 --modulepath /vagrant/modules
+puppet module install puppetlabs-ntp --version 4.2.0 --modulepath /vagrant/puppetcode/modules
 ```
 
 You will see that it automatically installs the `stdlib` module as a dependency.
@@ -61,7 +53,7 @@ Feel free to play with other parameters.
 ## Using the `Puppetfile`
 
 Another method for handling Puppet modules is the [`Puppetfile`](https://docs.puppet.com/pe/latest/cmgmt_puppetfile.html) used by [`librarian-puppet`](http://librarian-puppet.com/) and [`r10k`](https://github.com/puppetlabs/r10k) or Puppet Enterprise's code manager.
-Create the `Puppetfile` in the `workdir` with the contents
+Create the `Puppetfile` in the `puppetcode` directory with the contents
 ```
 forge "https://forgeapi.puppet.com"
 mod 'puppetlabs-motd', '1.4.0'
@@ -83,15 +75,17 @@ package {'librarian-puppet':
   provider => 'gem',
 }
 ```
+Notice that the command also outputs some puppet code showing what it actually did.
+
 We will also need git: `puppet resource package git ensure=present`.
-Now from `/vagrant` run `librarian-puppet update --verbose` and observe the output. 
+Now from `/vagrant/puppetcode` run `librarian-puppet update --verbose` and observe the output. 
 You will see that it first looked up all versions of the Modules listed in the Puppetfile and their dependencies and than recursively checked that they fulfill their (inter-)dependencies.
 The result of this was written to `Puppetfile.lock`.
 
 Finally `puppet module install` was used to install four modules, including the `registry` module as dependency of the `motd` Module for windows clients, as specified by the `Puppetfile.lock`.
 By running `librarian-puppet install` the modules can even be installed as per the lock file without dependency resolution.
 
-Note that `r10k`, the competitor to `librarian-puppet` is much more efficient in installing modules but can not handle dependencies.
+Note that `r10k`, the competitor to `librarian-puppet`, is much more efficient and faster in installing modules but can not handle dependencies.
 
 The Puppetfile supports much more than just downloading from Puppet forge.
 You can use git repositories as sources for modules and more. Have a look at the documentation.
@@ -123,3 +117,4 @@ You can also define your own variables, e.g. by
 ```
 although they should be called constants, since you can only set them once, i.e. you can't change variables.
 Rember: Puppet defines a state and even a variable can only have one state or content, although that my change every run.
+
