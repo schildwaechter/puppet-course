@@ -24,12 +24,11 @@ Vagrant.configure(2) do |config|
 
   config.vm.provision "puppet" do |puppet|
     puppet.environment_path = "."
-    puppet.environment = "puppetcode_03"
+    puppet.environment = "puppetcode_04"
     puppet.hiera_config_path = "hiera.yaml"
     puppet.options = "--show_diff --graph"
   end
 
 end
-
 
 

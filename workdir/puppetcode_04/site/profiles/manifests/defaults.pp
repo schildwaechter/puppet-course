@@ -1,6 +1,9 @@
 class profiles::defaults (
   $ntp_servers = ['ntps1.gwdg.de', 'ntps2.gwdg.de', 'ntps3.gwdg.de'],
 ){
+
+  include 'profiles::puppetlint'
+
   class {'::ntp':
     servers => $ntp_servers,
   }
@@ -10,3 +13,4 @@ class profiles::defaults (
   }
 
 }
+
