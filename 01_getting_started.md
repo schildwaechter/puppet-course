@@ -56,7 +56,7 @@ and in the `Vagrantfile` now add
   config.vm.provision "puppet" do |puppet|
     puppet.environment_path = "."
     puppet.environment = "puppetcode"
-    puppet.options = "--show_diff --graph"
+    puppet.options = "--show_diff"
   end
 ```
 to the config block, i.e. before the final `end`.

@@ -38,6 +38,9 @@ When applying this, you will see a lot of changes to the `ntp` config, as we are
 In particular, the nameservers have been switched to `0.debian.pool.ntp.org` through `3.debian.pool.ntp.org`.
 Now you also understand why we added the `--show-diff` option earlier.
 
+You will also see some deprecation warnings.
+This is caused by the fact that our version of the `ntp` module is slightly outdated while the `stdlib` module is current. This can be fixed by either downgrading `stdlib` to version 4.12.0 or upgrading `ntp`. We will do let later/
+
 Let's change that.
 Instead of just including the module with the default settings as we did above, let's give it some parameters
 ```puppet
@@ -52,16 +55,16 @@ Feel free to play with other parameters.
 
 ## Using the `Puppetfile`
 
-Another method for handling Puppet modules is the [`Puppetfile`](https://docs.puppet.com/pe/latest/cmgmt_puppetfile.html) used by [`librarian-puppet`](http://librarian-puppet.com/) and [`r10k`](https://github.com/puppetlabs/r10k) or Puppet Enterprise's code manager.
+Another method for handling Puppet modules is the [`Puppetfile`](https://docs.puppet.com/pe/latest/cmgmt_puppetfile.html) used by [`librarian-puppet`](http://librarian-puppet.com/) and [`r10k`](https://github.com/puppetlabs/r10k) or Puppet Enterprise's code manager. This methods allows to better track the versions of the different modules we use.
 Create the `Puppetfile` in the `puppetcode` directory with the contents
 ```
 forge "https://forgeapi.puppet.com"
 mod 'puppetlabs-motd', '1.4.0'
 mod 'puppetlabs-ntp', '4.2.0'
-mod 'puppetlabs-stdlib', '4.13.1'
+mod 'puppetlabs-stdlib', '4.12.0'
 ```
 
-This contains the `ntp` and `stdlib` modules from before and the `motd` module, we will be using soon.
+This contains the `ntp` and `stdlib` modules from before in compatible versions and the `motd` module, we will be using soon.
 
 To make use of the `Puppetfile` we will use `librarian-puppet` which we install as a Gem inside the Vagrant VM.
 As root inside the VM (`vagrant ssh` and `sudo -i`) do
@@ -98,23 +101,29 @@ Since we already installed the `motd` module, lets use it by adding this to our 
     content => "Welcome to ${::fqdn} running on ${::lsbdistid} ${::lsbdistrelease}!",
   }
 ```
+
 Notice that we are using variables in the string passed as content to the motd.
 The `$::fqdn` variable holds the fully qualified domain name of the node, while
 `$::lsbdistid` and `$::lsbdistrelease` are LSB distribution information.
-These variables are so-called *fact*s that puppet knows about the machine.
+These variables are so-called *facts* that puppet knows about the machine.
 To see all facts available to puppet run `facter -y -p` as root in the VM.
+
+Since Puppet 4 these facts are also available through the `$facts` hash, so instead of `$::fqdn` you can also use `$facts['fqdn']`.
 
 Note that the modules can add facts that puppet will than know and you can even add your own.
 
 You can also define your own variables, e.g. by
 ```puppet
-  $motd_string_a = "Welcome to ${::fqdn} running on ${::lsbdistid} ${::lsbdistrelease}!"
-  $motd_string_b = "This system was provision by puppet ${::uptime} after boot."
+  $motd_string_a = "Welcome to ${facts['fqdn']} running on ${facts['lsbdistid']} ${facts['lsbdistrelease']}!"
+  $motd_string_b = "This system was provisioned by puppet ${facts['uptime']} after boot."
   $motd_string = "${motd_string_a}${motd_string_b}"
   class {'::motd':
     content => $motd_string,
   }
 ```
-although they should be called constants, since you can only set them once, i.e. you can't change variables.
+
+These variables are actualy constants, since you can only set them once, i.e. you can't change variables.
 Rember: Puppet defines a state and even a variable can only have one state or content, although that my change every run.
+
+Another remark: The facts are evaluated as Puppet runs, see the `uptime` case above.
 

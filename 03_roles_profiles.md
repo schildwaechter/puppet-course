@@ -67,7 +67,7 @@ class profiles::defaults {
     servers => ['ntps1.gwdg.de', 'ntps2.gwdg.de', 'ntps3.gwdg.de'],
   }
   class {'::motd':
-    content => "Welcome to ${::fqdn} running on ${::lsbdistid} ${::lsbdistrelease}!",
+    content => "Welcome to ${facts['fqdn']} running on ${facts['lsbdistid']} ${facts['lsbdistrelease']}!",
   }
 }
 ```
@@ -89,19 +89,19 @@ First create a `hieradata` directory inside `puppetcode` and a `hiera.yaml` in t
 ```yaml
 ---
 :hierarchy:
-    - "%{::fqdn}_private"
-    - "%{::fqdn}_blackbox"
-    - "%{::fqdn}"
-    - "%{::environment}_blackbox"
-    - "%{::environment}"
-    - "%{::datacenter}_private"
-    - "%{::datacenter}_blackbox"
-    - "%{::datacenter}"
-    - common
+  - "%{::fqdn}_private"
+  - "%{::fqdn}_blackbox"
+  - "%{::fqdn}"
+  - "%{::environment}_blackbox"
+  - "%{::environment}"
+  - "%{::datacenter}_private"
+  - "%{::datacenter}_blackbox"
+  - "%{::datacenter}"
+  - common
 :backends:
-    - yaml
+  - yaml
 :yaml:
-    :datadir: 'hieradata'
+  :datadir: "/tmp/vagrant-puppet/environments/%{::environment}/hieradata"
 ```
 and change the Vagrantfile to
 ```ruby

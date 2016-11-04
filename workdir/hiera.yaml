@@ -1,0 +1,16 @@
+---
+:hierarchy:
+  - "%{::fqdn}_private"
+  - "%{::fqdn}_blackbox"
+  - "%{::fqdn}"
+  - "%{::environment}_blackbox"
+  - "%{::environment}"
+  - "%{::datacenter}_private"
+  - "%{::datacenter}_blackbox"
+  - "%{::datacenter}"
+  - common
+:backends:
+  - yaml
+:yaml:
+  :datadir: "/tmp/vagrant-puppet/environments/%{::environment}/hieradata"
+

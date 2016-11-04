@@ -1,0 +1,35 @@
+# vi: set ft=ruby :
+
+
+Vagrant.configure(2) do |config|
+  config.vm.box = "dariah-xenial-p4"
+  config.vm.box_url = "https://ci.de.dariah.eu/dariah-vagrant/dariah-xenial-p4/metadata.json"
+
+  config.vm.hostname = "box1.course.local"
+  config.vm.network "private_network", ip: "192.168.33.161"
+
+  config.vm.provider "virtualbox" do |vb|
+    #vb.gui = true
+    vb.name = "course-box1"
+    vb.customize ["modifyvm", :id, "--memory", "736"]
+    vb.customize ["modifyvm", :id, "--nictype1", "Am79C973"]
+    vb.customize ["modifyvm", :id, "--nictype2", "Am79C973"]
+  end
+
+  if Vagrant.has_plugin?("vagrant-cachier")
+    config.cache.scope = :box
+    config.cache.auto_detect = false
+    config.cache.enable :apt
+  end
+
+  config.vm.provision "puppet" do |puppet|
+    puppet.environment_path = "."
+    puppet.environment = "puppetcode_03"
+    puppet.hiera_config_path = "hiera.yaml"
+    puppet.options = "--show_diff --graph"
+  end
+
+end
+
+
+
