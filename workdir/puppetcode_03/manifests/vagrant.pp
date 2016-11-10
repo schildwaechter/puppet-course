@@ -1,7 +1,7 @@
 # Vagrant Puppet manifest
 node 'box1.course.local' {
 
-  include '::roles::database'
+  include '::roles::searchapp'
 
 }
 

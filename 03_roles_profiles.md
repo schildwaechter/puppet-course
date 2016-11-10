@@ -18,22 +18,42 @@ Thus we will now refer to any other module as a *component module*.
 Profiles can also include other profiles.
 
 Now this may sound abstract, but lets have an example:
-We have to servers:
-* the database server
-* the frontend webserver
+We have two servers:
+* the webserver hosting our *SimpleSearchApp* and elasticsearch node
+* an elasticsearch cluster node
 Each of those is a role.
 
 Than we have components:
-* MySQL
+* ElasticSearch
 * Apache
 * Ntp
 and more, each modelled by a profile.
 
-The database role will load the MySQL profile and the Ntp profile while the webserver will include the Apache and the Ntp profile.
+The *searchapp* role will load the *elastic* profile, the *searchapp* profile and the *default* profile will load things such as Ntp. Later the *cluster* role will include the *elastic* and *default* profiles only.
+
+Our application, the *SimpleSearchApp* is a simple singe page app, that consists of static code located in
+`workdir/simplesearchapp`.
+We'll load that directly into the VM by adding 
+```
+  config.vm.synced_folder "simplesearchapp", "/opt/simplesearchapp"
+```
+to the `Vagrant` file.
 
 ## Setup
 
-To get started, we need to make another distinction between the component modules and the roles and profiles.
+
+Let's get started with getting the upstream modules via `Puppetfile`:
+```
+forge 'https://forgeapi.puppetlabs.com'
+
+mod 'puppetlabs-apache', '1.10.0'
+mod 'puppetlabs-motd', '1.4.0'
+mod 'puppetlabs-ntp', '4.2.0'
+mod 'puppetlabs-stdlib', '4.12.0'
+mod 'elasticsearch-elasticsearch', '0.14.0'
+```
+
+We need to make a distinction between the component modules and the roles and profiles.
 While the latter are modules as any other, we will not be loading them the same way.
 Instead we keep them directly in our repository.
 But since `librarian-puppet` will throw away anything foreign from the `modules` directory, we need to have the roles and profiles elsewhere.
@@ -48,19 +68,20 @@ mkdir -p site/profiles/manifests
 ```
 before reloading the Vagrant VM.
 
-Create the database role in `site/roles/manifests/database.pp` as
+Create the SearchApp role in `site/roles/manifests/searchapp.pp` as
 ```puppet
-class roles::database {
-  include '::profiles::mysql'
+class roles::searchapp {
+  include '::profiles::elastic'
+  include '::profiles::simplesearchapp'
 }
 ```
-and the `mysql` profile in `site/profiles/manifests/mysql.pp`
+and the `simplesearchapp` profile in `site/profiles/manifests/simplesearchapp.pp`
 ```puppet
-class profiles::mysql {
+class profiles::simplesearchapp {
   include '::profiles::defaults'
 }
 ```
-and the `defaults` profile in `site/profiles/manifests/defaults.pp`
+our `defaults` profile in `site/profiles/manifests/defaults.pp` simply has
 ```puppet
 class profiles::defaults {
   class {'::ntp':
@@ -74,13 +95,50 @@ class profiles::defaults {
 while the `vagrant.pp` now becomes
 ```puppet
 node 'box1.course.local' {
-  include '::roles::database'
+  include '::roles::searchapp'
 }
 ```
 
 When you apply this, no changes should happen as we are still basically applying the same code as before.
 But now we could easily add another VM and make a databse server without duplicating the code.
 Note: We have of course not done any database/mysql setup yet, that will be the exercise later.
+
+So lets add the actual setup
+```puppet
+class profiles::simplesearchapp {
+
+  include '::profiles::defaults'
+
+  include '::profiles::apache'
+
+  include '::apache::mod::proxy'
+
+  apache::vhost { $facts['fqdn']:
+    port    => '80',
+    docroot => '/opt/simplesearchapp',
+  }
+
+  apache::vhost { "${facts['fqdn']}_9222":
+    port    => '9222',
+    docroot => '/opt/simplesearchapp',
+    proxy_pass => [
+      { 'path' => '/', 'url' => 'http://localhost:9200/' },
+    ]
+  }
+
+}
+```
+and
+```puppet
+class profiles::apache {
+  include '::profiles::defaults'
+  class { '::apache':
+    default_vhost => false,
+  }
+}
+```
+
+
 
 Now you my have seen those mentions of *Hiera* in the warning.
 Hiera is a hierarchical key-value-store that we will use now.
@@ -114,7 +172,7 @@ and change the Vagrantfile to
 ```
 
 Now what hiera does is look up variables according to the hierachy defined above.
-Based on the node's facts `$::fqdn`, `$::environment` and `$::datacenter` it will try finding files matching the resolved names from the above list starting from top.
+Based on the node's facts `$facts['fqdn']`=`$::fqdn`, `$facts['environment']`=`$::environment` and `$facts['datacenter']`=`$::datacenter` it will try finding files matching the resolved names from the above list starting from top.
 Inside those it will look for the first match of any variable that it is looking for.
 
 ## Using Hiera
