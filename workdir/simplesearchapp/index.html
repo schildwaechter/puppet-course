@@ -17,9 +17,9 @@
         <div class="row">
           <div class="col-lg-6">
             <div class="input-group">
-              <input type="text" class="form-control" placeholder="Search for...">
+              <input id="searchTerm" type="text" class="form-control" placeholder="Search for...">
               <span class="input-group-btn">
-                <button class="btn btn-default" type="button">Go!</button>
+                <button id="searchButton" class="btn btn-default" type="button">Go!</button>
               </span>
             </div><!-- /input-group -->
           </div><!-- /.col-lg-6 -->
@@ -27,9 +27,30 @@
 
       </div><!-- /.jumbotron -->
 
+      <table class="table" id="firstLines">
+        <thead><tr>
+            <th>Author</th><th>Year</th><th>Book</th><th>Line</th>
+        </tr></thead>
+        <tbody>
+          
+        </tbody>
+      </table>
+
     </div>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script>
+    $('#searchButton').on('click', function(event) {
+      $("#firstLines tbody").empty();
+      $.post( "http://box1.course.local:9222/lines/firstline/_search?q="+$("#searchTerm").val(), function( data ) {
+        if (Number (data['hits']['total']) > 0) {
+          $.each(data['hits']['hits'], function (i, val ){
+            $("#firstLines tbody").append("<tr><td>"+val['_source']['author']+"</td><td>"+val['_source']['year']+"</td><td>"+val['_source']['book']+"</td><td>"+val['_source']['line']+"</td></tr>");
+          });
+        }
+      });
+    });
+    </script>
   </body>
 </html>
 

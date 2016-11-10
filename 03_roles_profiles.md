@@ -71,7 +71,6 @@ before reloading the Vagrant VM.
 Create the SearchApp role in `site/roles/manifests/searchapp.pp` as
 ```puppet
 class roles::searchapp {
-  include '::profiles::elastic'
   include '::profiles::simplesearchapp'
 }
 ```
@@ -100,18 +99,22 @@ node 'box1.course.local' {
 ```
 
 When you apply this, no changes should happen as we are still basically applying the same code as before.
-But now we could easily add another VM and make a databse server without duplicating the code.
-Note: We have of course not done any database/mysql setup yet, that will be the exercise later.
+But now we could easily add another VM and create an elasticsearch cluster very easily.
 
-So lets add the actual setup
+## Adding our sample app
+
+Lets add the actual setup for our search application above.
+
 ```puppet
 class profiles::simplesearchapp {
 
   include '::profiles::defaults'
 
   include '::profiles::apache'
+  include '::profiles::elastic'
 
   include '::apache::mod::proxy'
+  include '::apache::mod::headers'
 
   apache::vhost { $facts['fqdn']:
     port    => '80',
@@ -123,7 +126,8 @@ class profiles::simplesearchapp {
     docroot => '/opt/simplesearchapp',
     proxy_pass => [
       { 'path' => '/', 'url' => 'http://localhost:9200/' },
-    ]
+    ],
+    headers => ['set Access-Control-Allow-Origin "*"'],
   }
 
 }
@@ -137,10 +141,41 @@ class profiles::apache {
   }
 }
 ```
+as well as
+```puppet
+class profiles::elastic {
+  include '::profiles::defaults'
+  class { '::elasticsearch':
+    version           => '2.3.4',
+    java_install      => true,
+    manage_repo       => true,
+    repo_version      => '2.x',
+    restart_on_change => true,
+  }
+  elasticsearch::instance { 'es-01': }
+  elasticsearch::plugin { 'mobz/elasticsearch-head':
+    instances => 'es-01',
+  }
+  elasticsearch::plugin { 'jprante/elasticsearch-knapsack':
+    instances => 'es-01',
+    url       => 'http://xbib.org/repository/org/xbib/elasticsearch/plugin/elasticsearch-knapsack/2.3.4.0/elasticsearch-knapsack-2.3.4.0-plugin.zip',
+  }
+}
+```
+
+Now that the system is created, lets go about restoring the data.
+As root inside the VM run
+```
+cp /opt/simplesearchapp/lines.tar.gz /var/log/elasticsearch/es-01/
+curl -XPOST localhost:9200/lines/_import
+```
+
+This will take about a minute!
 
 
+## Hiera
 
-Now you my have seen those mentions of *Hiera* in the warning.
+Now you may have seen those mentions of *Hiera* in the warning.
 Hiera is a hierarchical key-value-store that we will use now.
 
 First create a `hieradata` directory inside `puppetcode` and a `hiera.yaml` in the `workdir` with contents
@@ -175,7 +210,7 @@ Now what hiera does is look up variables according to the hierachy defined above
 Based on the node's facts `$facts['fqdn']`=`$::fqdn`, `$facts['environment']`=`$::environment` and `$facts['datacenter']`=`$::datacenter` it will try finding files matching the resolved names from the above list starting from top.
 Inside those it will look for the first match of any variable that it is looking for.
 
-## Using Hiera
+### Using Hiera
 
 Lets tell Puppet to look for some hiera variables by changing the `default` profile:
 ```puppet
@@ -186,7 +221,7 @@ class profiles::defaults (
     servers => $ntp_servers,
   }
   class {'::motd':
-    content => "Welcome to ${::fqdn} running on ${::lsbdistid} ${::lsbdistrelease}!",
+    content => "Welcome to ${facts['fqdn']} running on ${facts['lsbdistid']} ${facts['lsbdistrelease']}!",
   }
 }
 ```

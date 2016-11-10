@@ -1,5 +1,7 @@
 # More
 
+## The Graph
+
 Let's have a look at the Puppet graph.
 Let's change the `Vagrantfile` to say
 ```ruby
@@ -61,4 +63,11 @@ class profiles::puppetlint {
 
 Now once you applied the fixed code, run `puppet-lint` on the same class.
 
+
+## Multiple hosts
+
+In the `Vagrantfile` duplicate the config stanza for `box1` and add a `box2`.
+Than define it to include only an elasticsearch node.
+
+Finally, mak sure they find each other.
 
