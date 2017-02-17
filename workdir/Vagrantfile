@@ -2,8 +2,8 @@
 
 
 Vagrant.configure(2) do |config|
-  config.vm.box = "dariah-xenial-p4"
-  config.vm.box_url = "https://ci.de.dariah.eu/dariah-vagrant/dariah-xenial-p4/metadata.json"
+  config.vm.box = "dariah-xenial"
+  config.vm.box_url = "https://ci.de.dariah.eu/dariah-vagrant/dariah-xenial/metadata.json"
 
   config.vm.hostname = "box1.course.local"
   config.vm.network "private_network", ip: "192.168.33.161"

@@ -1,9 +1,7 @@
 # Puppet Basics
 
 This is a very basic introduction to [puppet](https://puppet.com) as it is used in DARIAH-DE.
-This course serves as a rough guides first overview to Puppet, in particular version 4.
-
-Note that as of November 2016, DARIAH-DE has not yet switched from Puppet 3 to Puppet 4.
+This course serves as a rough guides first overview to Puppet version 4.
 
 ### Prerequesites
 
