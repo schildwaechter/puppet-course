@@ -98,17 +98,17 @@ You can use git repositories as sources for modules and more. Have a look at the
 Since we already installed the `motd` module, lets use it by adding this to our puppet code:
 ```puppet
   class {'::motd':
-    content => "Welcome to ${::fqdn} running on ${::lsbdistid} ${::lsbdistrelease}!",
+    content => "Welcome to ${facts['fqdn']} running on ${facts['lsbdistid']} ${facts['lsbdistrelease']}!",
   }
 ```
 
 Notice that we are using variables in the string passed as content to the motd.
-The `$::fqdn` variable holds the fully qualified domain name of the node, while
-`$::lsbdistid` and `$::lsbdistrelease` are LSB distribution information.
-These variables are so-called *facts* that puppet knows about the machine.
+There are a lot of so-called *facts* that puppet knows about the system in the `$facts` hash,
+including the fully qualified domain name of the node, LSB distribution information and much more..
 To see all facts available to puppet run `facter -y -p` as root in the VM.
 
-Since Puppet 4 these facts are also available through the `$facts` hash, so instead of `$::fqdn` you can also use `$facts['fqdn']`.
+Before Puppet 4 these facts were accessed as individual top-scope variables, such as
+`${::fqdn}` or `${::lsbdistid}` and `${::lsbdistrelease}` which you will still find in lots of puppet code.
 
 Note that the modules can add facts that puppet will than know and you can even add your own.
 

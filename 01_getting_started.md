@@ -5,8 +5,8 @@
 Begin by creating your `workdir` with the following `Vagrantfile`:
 ```ruby
 Vagrant.configure(2) do |config|
-  config.vm.box = "dariah-xenial-p4"
-  config.vm.box_url = "https://ci.de.dariah.eu/dariah-vagrant/dariah-xenial-p4/metadata.json"
+  config.vm.box = "dariah-xenial"
+  config.vm.box_url = "https://ci.de.dariah.eu/dariah-vagrant/dariah-xenial/metadata.json"
 
   config.vm.hostname = "box1.course.local"
   config.vm.network "private_network", ip: "192.168.33.161"
@@ -52,7 +52,7 @@ node 'box1.course.local' {
 }
 ```
 and in the `Vagrantfile` now add
-```
+```ruby
   config.vm.provision "puppet" do |puppet|
     puppet.environment_path = "."
     puppet.environment = "puppetcode"

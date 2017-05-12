@@ -6,7 +6,7 @@ class profiles::defaults (
   }
 
   class {'::motd':
-    content => "Welcome to ${::fqdn} running on ${::lsbdistid} ${::lsbdistrelease}!",
+    content => "Welcome to ${facts['fqdn']} running on ${facts['lsbdistid']} ${facts['lsbdistrelease']}!",
   }
 
 }
