@@ -58,7 +58,7 @@ Feel free to play with other parameters.
 Another method for handling Puppet modules is the [`Puppetfile`](https://docs.puppet.com/pe/latest/cmgmt_puppetfile.html) used by [`librarian-puppet`](http://librarian-puppet.com/) and [`r10k`](https://github.com/puppetlabs/r10k) or Puppet Enterprise's code manager. This methods allows to better track the versions of the different modules we use.
 Create the `Puppetfile` in the `puppetcode` directory with the contents
 ```
-forge "https://forgeapi.puppet.com"
+forge "https://forgeapi.puppetlabs.com"
 mod 'puppetlabs-motd', '1.4.0'
 mod 'puppetlabs-ntp', '4.2.0'
 mod 'puppetlabs-stdlib', '4.12.0'
