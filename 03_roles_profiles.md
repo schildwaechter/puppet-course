@@ -49,8 +49,8 @@ forge 'https://forgeapi.puppetlabs.com'
 mod 'puppetlabs-apache', '1.10.0'
 mod 'puppetlabs-motd', '1.4.0'
 mod 'puppetlabs-ntp', '4.2.0'
-mod 'puppetlabs-stdlib', '4.12.0'
-mod 'elasticsearch-elasticsearch', '0.14.0'
+mod 'puppetlabs-stdlib', '4.13.0'
+mod 'elastic-elasticsearch', '5.2.0'
 ```
 
 We need to make a distinction between the component modules and the roles and profiles.
