@@ -53,7 +53,7 @@ class profiles::puppetlint {
                    'puppet-lint-trailing_newline-check',
                    'puppet-lint-unquoted_string-check',
                    'puppet-lint-variable_contains_upcase'],
-                  {'ensure' => 'present', 'provider' => 'gem'})
+                  {'ensure' => 'present', 'provider' => 'gem', 'tag' => 'linting'})
 
  # https://docs.puppet.com/puppet/latest/reference/lang_collectors.html
  Package['puppet-lint'] -> Package <| tag == 'linting' |>
